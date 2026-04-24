@@ -98,4 +98,4 @@ To run this project, you will need to add the following environment variables to
 Built with ❤️ for **Adivya 2.0 Hackathon @ IIT Ropar** by:
 
 **Team HACKFINITY**
-- **Shivam Indore**
+- **Shivam Indore** & **Kushagra Shrivastav**

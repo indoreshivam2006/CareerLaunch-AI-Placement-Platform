@@ -24,7 +24,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Import models so Alembic can detect them
-from models import User  # noqa: F401, E402
+from models import User, InterviewSession  # noqa: F401, E402
 from database import Base  # noqa: E402
 
 target_metadata = Base.metadata

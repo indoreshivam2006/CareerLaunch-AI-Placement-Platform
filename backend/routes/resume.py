@@ -135,7 +135,7 @@ async def jd_match(request: Request):
                     "suggestions": ["Please upload resume first"]}
         
         client = _get_groq_client()
-        response = client.chat.completions.create(
+        response = await client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{
                 "role": "user",

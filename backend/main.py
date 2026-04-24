@@ -1,6 +1,9 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from database import Base, engine
 from routes.user import router as user_router
 from routes.resume import router as resume_router
 from routes.interview import router as interview_router
@@ -14,11 +17,27 @@ app = FastAPI(
 )
 
 # ---------------------------------------------------------------------------
-# CORS – allow the Next.js frontend to call this API
+# Auto-create database tables on startup
+# Ensures the DB schema exists even without running Alembic manually.
+# This is critical for Render where the filesystem is ephemeral (SQLite)
+# or when using a fresh PostgreSQL database.
 # ---------------------------------------------------------------------------
+import models  # noqa: F401 – ensures all models are registered with Base
+
+Base.metadata.create_all(bind=engine)
+
+# ---------------------------------------------------------------------------
+# CORS – allow the Next.js frontend to call this API
+# Supports multiple origins (comma-separated in FRONTEND_URL env var)
+# ---------------------------------------------------------------------------
+frontend_url = os.getenv("FRONTEND_URL", "http://localhost:3000")
+
+# Support comma-separated origins for multiple allowed domains
+allowed_origins = [origin.strip() for origin in frontend_url.split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

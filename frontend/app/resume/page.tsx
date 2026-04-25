@@ -139,90 +139,206 @@ export default function ResumeBuilderPage() {
 
   const handleExportPDF = async () => {
     try {
-      const element = document.getElementById('resume-preview');
-      if (!element) {
-        alert("Resume preview not found. Please try again.");
-        return;
-      }
+      // Dynamic import for SSR compatibility (Vercel deployment)
+      const html2pdf = (await import('html2pdf.js')).default
 
-      // Clone the element so we can apply inline computed styles
-      // without mutating the live DOM. html2canvas often fails to
-      // resolve Tailwind CSS utility classes / CSS variables.
-      const clone = element.cloneNode(true) as HTMLElement;
-      clone.style.position = 'fixed';
-      clone.style.left = '-9999px';
-      clone.style.top = '0';
-      clone.style.width = element.offsetWidth + 'px';
-      clone.style.backgroundColor = '#ffffff';
-      clone.style.overflow = 'visible';
+      // Build HTML string directly from state — self-contained with
+      // inline styles so it works regardless of Tailwind/SSR context
+      const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            color: #000;
+            background: #fff;
+          }
+          .header { 
+            background: #1a1a1a; 
+            color: white; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+          }
+          .name { 
+            font-size: 26px; 
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+          }
+          .contact { 
+            font-size: 11px; 
+            margin-top: 6px;
+            color: #ccc;
+          }
+          .section { margin-bottom: 18px; }
+          .section-title { 
+            font-size: 13px; 
+            font-weight: bold;
+            border-bottom: 1px solid #000; 
+            padding-bottom: 3px; 
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          }
+          .item { margin-bottom: 10px; }
+          .item-row { 
+            display: flex; 
+            justify-content: space-between;
+            align-items: flex-start;
+          }
+          .item-title { 
+            font-weight: bold; 
+            font-size: 13px; 
+          }
+          .item-sub { 
+            font-size: 11px; 
+            color: #555; 
+          }
+          .item-right {
+            font-size: 11px;
+            color: #555;
+            text-align: right;
+            min-width: 120px;
+          }
+          .item-desc { 
+            font-size: 11px; 
+            margin-top: 3px;
+            line-height: 1.5;
+            color: #333;
+          }
+          .skill-tag { 
+            display: inline-block; 
+            margin: 2px 4px 2px 0; 
+            padding: 2px 8px; 
+            background: #f0f0f0; 
+            border-radius: 10px; 
+            font-size: 11px; 
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="name">${personalInfo.name || 'Your Name'}</div>
+          <div class="contact">
+            ${personalInfo.email || ''} 
+            ${personalInfo.phone ? '&nbsp;|&nbsp;' + personalInfo.phone : ''}
+            ${personalInfo.linkedin ? '&nbsp;|&nbsp;LinkedIn' : ''}
+            ${personalInfo.github ? '&nbsp;|&nbsp;GitHub' : ''}
+          </div>
+        </div>
 
-      // Inline all computed styles onto every element in the clone
-      // so html2canvas does not need to resolve Tailwind classes
-      const sourceElements = element.querySelectorAll('*');
-      const cloneElements = clone.querySelectorAll('*');
-      sourceElements.forEach((srcEl, i) => {
-        const computed = window.getComputedStyle(srcEl);
-        const cloneEl = cloneElements[i] as HTMLElement;
-        if (!cloneEl || !cloneEl.style) return;
-        cloneEl.style.color = computed.color;
-        cloneEl.style.backgroundColor = computed.backgroundColor;
-        cloneEl.style.fontSize = computed.fontSize;
-        cloneEl.style.fontWeight = computed.fontWeight;
-        cloneEl.style.fontFamily = computed.fontFamily;
-        cloneEl.style.fontStyle = computed.fontStyle;
-        cloneEl.style.lineHeight = computed.lineHeight;
-        cloneEl.style.letterSpacing = computed.letterSpacing;
-        cloneEl.style.textTransform = computed.textTransform;
-        cloneEl.style.display = computed.display;
-        cloneEl.style.flexDirection = computed.flexDirection;
-        cloneEl.style.flexWrap = computed.flexWrap;
-        cloneEl.style.justifyContent = computed.justifyContent;
-        cloneEl.style.alignItems = computed.alignItems;
-        cloneEl.style.gap = computed.gap;
-        cloneEl.style.padding = computed.padding;
-        cloneEl.style.margin = computed.margin;
-        cloneEl.style.borderBottom = computed.borderBottom;
-        cloneEl.style.borderColor = computed.borderColor;
-        cloneEl.style.whiteSpace = computed.whiteSpace;
-        cloneEl.style.overflow = 'visible';
-        cloneEl.style.textDecoration = computed.textDecoration;
-      });
+        <div class="section">
+          <div class="section-title">Education</div>
+          <div class="item">
+            <div class="item-row">
+              <span class="item-title">${education.college || ''}</span>
+              <span class="item-right">${education.gradYear || ''}</span>
+            </div>
+            <div class="item-row">
+              <span class="item-sub">${education.degree || ''}</span>
+              <span class="item-right">CGPA: ${education.cgpa || ''}</span>
+            </div>
+          </div>
+        </div>
 
-      // Also inline computed styles for the root clone element itself
-      const rootComputed = window.getComputedStyle(element);
-      clone.style.color = rootComputed.color;
-      clone.style.fontFamily = rootComputed.fontFamily;
+        ${projects.length > 0 ? `
+        <div class="section">
+          <div class="section-title">Projects</div>
+          ${projects.map(p => `
+            <div class="item">
+              <div class="item-row">
+                <span class="item-title">${p.title || ''}</span>
+                <span class="item-right item-sub">
+                  ${p.techStack || ''}
+                </span>
+              </div>
+              <div class="item-desc">
+                ${(p.description || '').replace(/\n/g, '<br/>')}
+              </div>
+            </div>
+          `).join('')}
+        </div>` : ''}
 
-      document.body.appendChild(clone);
+        ${skills.length > 0 ? `
+        <div class="section">
+          <div class="section-title">Skills</div>
+          <div>
+            ${skills.map(s => 
+              `<span class="skill-tag">${s}</span>`
+            ).join('')}
+          </div>
+        </div>` : ''}
 
-      // Wait for fonts to finish loading and layout to settle
-      await document.fonts.ready;
-      await new Promise(resolve => setTimeout(resolve, 300));
+        ${experience.length > 0 ? `
+        <div class="section">
+          <div class="section-title">Experience</div>
+          ${experience.map(e => `
+            <div class="item">
+              <div class="item-row">
+                <span class="item-title">
+                  ${e.role || ''} at ${e.company || ''}
+                </span>
+                <span class="item-right">${e.duration || ''}</span>
+              </div>
+              <div class="item-desc">
+                ${(e.description || '').replace(/\n/g, '<br/>')}
+              </div>
+            </div>
+          `).join('')}
+        </div>` : ''}
 
-      const html2pdfModule = await import('html2pdf.js');
-      const html2pdf = html2pdfModule.default || html2pdfModule;
+        ${certifications.length > 0 ? `
+        <div class="section">
+          <div class="section-title">Certifications</div>
+          ${certifications.map(c => `
+            <div class="item">
+              <div class="item-row">
+                <span class="item-title">${c.name || ''}</span>
+                <span class="item-right">${c.year || ''}</span>
+              </div>
+              <span class="item-sub">${c.issuer || ''}</span>
+            </div>
+          `).join('')}
+        </div>` : ''}
+
+      </body>
+      </html>`
+
+      // Create element and append to body (offscreen)
+      const element = document.createElement('div')
+      element.style.position = 'absolute'
+      element.style.left = '-9999px'
+      element.style.top = '-9999px'
+      element.innerHTML = htmlContent
+      document.body.appendChild(element)
 
       const options = {
         margin: 10,
         filename: 'resume.pdf',
-        image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: {
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
           scale: 2,
           useCORS: true,
-          backgroundColor: '#ffffff',
           logging: false,
-          windowWidth: element.offsetWidth,
+          allowTaint: true,
+          backgroundColor: '#ffffff'
         },
-        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait'
+        }
       }
 
-      await html2pdf().set(options).from(clone).save();
-
-      // Clean up the offscreen clone
-      document.body.removeChild(clone);
+      await html2pdf().set(options).from(element).save()
+      document.body.removeChild(element)
     } catch (error) {
-      console.error("PDF Export Error:", error);
-      alert("Failed to export PDF. Please try again.");
+      console.error('PDF Export Error:', error)
+      alert('PDF export failed. Please try again.')
     }
   }
 

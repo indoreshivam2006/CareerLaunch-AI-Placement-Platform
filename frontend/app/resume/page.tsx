@@ -139,130 +139,24 @@ export default function ResumeBuilderPage() {
 
   const handleExportPDF = async () => {
     try {
+      const element = document.getElementById('resume-preview');
+      if (!element) {
+        alert("Resume preview not found. Please try again.");
+        return;
+      }
+
       const html2pdfModule = await import('html2pdf.js');
       const html2pdf = html2pdfModule.default || html2pdfModule;
-    
-    // Build HTML string directly from state data
-    const htmlContent = `
-      <html>
-      <head>
-        <style>
-          body { font-family: Arial, sans-serif; 
-                 margin: 20px; color: #000; }
-          .header { background: #1a1a1a; color: white; 
-                    padding: 20px; margin-bottom: 20px; }
-          .name { font-size: 28px; font-weight: bold; 
-                  text-transform: uppercase; letter-spacing: 2px; }
-          .contact { font-size: 12px; margin-top: 5px; }
-          .section { margin-bottom: 20px; }
-          .section-title { font-size: 14px; font-weight: bold; 
-                           border-bottom: 1px solid #ccc; 
-                           padding-bottom: 4px; 
-                           margin-bottom: 10px; 
-                           text-transform: uppercase; }
-          .item { margin-bottom: 12px; }
-          .item-header { display: flex; 
-                         justify-content: space-between; }
-          .item-title { font-weight: bold; font-size: 13px; }
-          .item-sub { font-size: 11px; color: #666; }
-          .item-desc { font-size: 12px; margin-top: 4px; }
-          .skill-tag { display: inline-block; 
-                       margin: 2px; padding: 2px 8px; 
-                       background: #f0f0f0; 
-                       border-radius: 10px; 
-                       font-size: 11px; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="name">${personalInfo.name || ''}</div>
-          <div class="contact">
-            ${personalInfo.email || ''} &nbsp;&nbsp; 
-            ${personalInfo.phone || ''} &nbsp;&nbsp;
-            ${personalInfo.linkedin ? 'LinkedIn' : ''} &nbsp;&nbsp;
-            ${personalInfo.github ? 'GitHub' : ''}
-          </div>
-        </div>
 
-        <div class="section">
-          <div class="section-title">Education</div>
-          <div class="item">
-            <div class="item-header">
-              <span class="item-title">${education.college || ''}</span>
-              <span class="item-sub">${education.gradYear || ''}</span>
-            </div>
-            <div class="item-header">
-              <span class="item-sub">${education.degree || ''}</span>
-              <span class="item-sub">CGPA: ${education.cgpa || ''}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-title">Projects</div>
-          ${projects.map(p => {
-            const cleanDesc = (p.description || '')
-              .replace(/^- /gm, '• ')
-              .replace(/\n/g, '<br/>')
-            return `
-            <div class="item">
-              <div class="item-header">
-                <span class="item-title">${p.title || ''}</span>
-                <span class="item-sub">${p.techStack || ''}</span>
-              </div>
-              <div class="item-desc">${cleanDesc}</div>
-            </div>
-            `
-          }).join('')}
-        </div>
-
-        <div class="section">
-          <div class="section-title">Skills</div>
-          <div>${skills.map(s => 
-            `<span class="skill-tag">${s}</span>`
-          ).join('')}</div>
-        </div>
-
-        ${experience.length > 0 ? `
-        <div class="section">
-          <div class="section-title">Experience</div>
-          ${experience.map(e => `
-            <div class="item">
-              <div class="item-header">
-                <span class="item-title">${e.role || ''} 
-                  at ${e.company || ''}</span>
-                <span class="item-sub">${e.duration || ''}</span>
-              </div>
-              <div class="item-desc">${e.description || ''}</div>
-            </div>
-          `).join('')}
-        </div>` : ''}
-
-        <div class="section">
-          <div class="section-title">Certifications</div>
-          ${certifications.map(c => `
-            <div class="item">
-              <div class="item-header">
-                <span class="item-title">${c.name || ''}</span>
-                <span class="item-sub">${c.year || ''}</span>
-              </div>
-              <span class="item-sub">${c.issuer || ''}</span>
-            </div>
-          `).join('')}
-        </div>
-      </body>
-      </html>
-    `
-    
       const options = {
         margin: 10,
         filename: 'resume.pdf',
         image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
       }
-      
-      await html2pdf().set(options).from(htmlContent).save()
+
+      await html2pdf().set(options).from(element).save();
     } catch (error) {
       console.error("PDF Export Error:", error);
       alert("Failed to export PDF. Please try again.");

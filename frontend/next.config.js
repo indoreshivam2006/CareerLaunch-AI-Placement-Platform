@@ -8,6 +8,11 @@ const nextConfig = {
       },
     ],
   },
+  // Disable static page generation for all pages at build time.
+  // This prevents "TypeError: Invalid URL" errors during Vercel builds
+  // when runtime environment variables (NEXTAUTH_URL, etc.) are not
+  // available at build time in the expected format.
+  output: "standalone",
 };
 
 module.exports = nextConfig;

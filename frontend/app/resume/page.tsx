@@ -139,205 +139,183 @@ export default function ResumeBuilderPage() {
 
   const handleExportPDF = async () => {
     try {
-      // Dynamic import for SSR compatibility (Vercel deployment)
-      const html2pdf = (await import('html2pdf.js')).default
+      const { jsPDF } = await import('jspdf')
+      const doc = new jsPDF()
 
-      // Build HTML string directly from state — self-contained with
-      // inline styles so it works regardless of Tailwind/SSR context
-      const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <style>
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { 
-            font-family: Arial, sans-serif; 
-            padding: 20px; 
-            color: #000;
-            background: #fff;
-          }
-          .header { 
-            background: #1a1a1a; 
-            color: white; 
-            padding: 20px; 
-            margin-bottom: 20px; 
-          }
-          .name { 
-            font-size: 26px; 
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-          }
-          .contact { 
-            font-size: 11px; 
-            margin-top: 6px;
-            color: #ccc;
-          }
-          .section { margin-bottom: 18px; }
-          .section-title { 
-            font-size: 13px; 
-            font-weight: bold;
-            border-bottom: 1px solid #000; 
-            padding-bottom: 3px; 
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-          }
-          .item { margin-bottom: 10px; }
-          .item-row { 
-            display: flex; 
-            justify-content: space-between;
-            align-items: flex-start;
-          }
-          .item-title { 
-            font-weight: bold; 
-            font-size: 13px; 
-          }
-          .item-sub { 
-            font-size: 11px; 
-            color: #555; 
-          }
-          .item-right {
-            font-size: 11px;
-            color: #555;
-            text-align: right;
-            min-width: 120px;
-          }
-          .item-desc { 
-            font-size: 11px; 
-            margin-top: 3px;
-            line-height: 1.5;
-            color: #333;
-          }
-          .skill-tag { 
-            display: inline-block; 
-            margin: 2px 4px 2px 0; 
-            padding: 2px 8px; 
-            background: #f0f0f0; 
-            border-radius: 10px; 
-            font-size: 11px; 
-          }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="name">${personalInfo.name || 'Your Name'}</div>
-          <div class="contact">
-            ${personalInfo.email || ''} 
-            ${personalInfo.phone ? '&nbsp;|&nbsp;' + personalInfo.phone : ''}
-            ${personalInfo.linkedin ? '&nbsp;|&nbsp;LinkedIn' : ''}
-            ${personalInfo.github ? '&nbsp;|&nbsp;GitHub' : ''}
-          </div>
-        </div>
+      let y = 20
+      const pageWidth = doc.internal.pageSize.getWidth()
+      const margin = 15
+      const contentWidth = pageWidth - margin * 2
 
-        <div class="section">
-          <div class="section-title">Education</div>
-          <div class="item">
-            <div class="item-row">
-              <span class="item-title">${education.college || ''}</span>
-              <span class="item-right">${education.gradYear || ''}</span>
-            </div>
-            <div class="item-row">
-              <span class="item-sub">${education.degree || ''}</span>
-              <span class="item-right">CGPA: ${education.cgpa || ''}</span>
-            </div>
-          </div>
-        </div>
+      // Header background
+      doc.setFillColor(26, 26, 26)
+      doc.rect(0, 0, pageWidth, 35, 'F')
 
-        ${projects.length > 0 ? `
-        <div class="section">
-          <div class="section-title">Projects</div>
-          ${projects.map(p => `
-            <div class="item">
-              <div class="item-row">
-                <span class="item-title">${p.title || ''}</span>
-                <span class="item-right item-sub">
-                  ${p.techStack || ''}
-                </span>
-              </div>
-              <div class="item-desc">
-                ${(p.description || '').replace(/\n/g, '<br/>')}
-              </div>
-            </div>
-          `).join('')}
-        </div>` : ''}
+      // Name
+      doc.setTextColor(255, 255, 255)
+      doc.setFontSize(22)
+      doc.setFont('helvetica', 'bold')
+      doc.text(
+        (personalInfo.name || 'Your Name').toUpperCase(),
+        margin, 15
+      )
 
-        ${skills.length > 0 ? `
-        <div class="section">
-          <div class="section-title">Skills</div>
-          <div>
-            ${skills.map(s => 
-              `<span class="skill-tag">${s}</span>`
-            ).join('')}
-          </div>
-        </div>` : ''}
+      // Contact
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'normal')
+      const contact = [
+        personalInfo.email,
+        personalInfo.phone,
+        personalInfo.linkedin ? 'LinkedIn' : '',
+        personalInfo.github ? 'GitHub' : ''
+      ].filter(Boolean).join('  |  ')
+      doc.text(contact, margin, 25)
 
-        ${experience.length > 0 ? `
-        <div class="section">
-          <div class="section-title">Experience</div>
-          ${experience.map(e => `
-            <div class="item">
-              <div class="item-row">
-                <span class="item-title">
-                  ${e.role || ''} at ${e.company || ''}
-                </span>
-                <span class="item-right">${e.duration || ''}</span>
-              </div>
-              <div class="item-desc">
-                ${(e.description || '').replace(/\n/g, '<br/>')}
-              </div>
-            </div>
-          `).join('')}
-        </div>` : ''}
+      y = 45
+      doc.setTextColor(0, 0, 0)
 
-        ${certifications.length > 0 ? `
-        <div class="section">
-          <div class="section-title">Certifications</div>
-          ${certifications.map(c => `
-            <div class="item">
-              <div class="item-row">
-                <span class="item-title">${c.name || ''}</span>
-                <span class="item-right">${c.year || ''}</span>
-              </div>
-              <span class="item-sub">${c.issuer || ''}</span>
-            </div>
-          `).join('')}
-        </div>` : ''}
+      // Helper functions
+      const addSectionTitle = (title: string) => {
+        doc.setFontSize(11)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(0, 0, 0)
+        doc.text(title.toUpperCase(), margin, y)
+        doc.setDrawColor(0, 0, 0)
+        doc.line(margin, y + 1, pageWidth - margin, y + 1)
+        y += 8
+      }
 
-      </body>
-      </html>`
+      const addText = (
+        text: string,
+        fontSize: number,
+        bold: boolean = false,
+        color: number[] = [0, 0, 0]
+      ) => {
+        doc.setFontSize(fontSize)
+        doc.setFont('helvetica', bold ? 'bold' : 'normal')
+        doc.setTextColor(color[0], color[1], color[2])
+        const lines = doc.splitTextToSize(text, contentWidth)
+        doc.text(lines, margin, y)
+        y += lines.length * (fontSize * 0.4) + 2
+      }
 
-      // Create element and append to body (offscreen)
-      const element = document.createElement('div')
-      element.style.position = 'absolute'
-      element.style.left = '-9999px'
-      element.style.top = '-9999px'
-      element.innerHTML = htmlContent
-      document.body.appendChild(element)
-
-      const options = {
-        margin: 10,
-        filename: 'resume.pdf',
-        image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { 
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          allowTaint: true,
-          backgroundColor: '#ffffff'
-        },
-        jsPDF: { 
-          unit: 'mm' as const, 
-          format: 'a4' as const, 
-          orientation: 'portrait' as const
+      const checkNewPage = () => {
+        if (y > 270) {
+          doc.addPage()
+          y = 20
         }
       }
 
-      await html2pdf().set(options).from(element).save()
-      document.body.removeChild(element)
+      // EDUCATION
+      addSectionTitle('Education')
+      doc.setFontSize(12)
+      doc.setFont('helvetica', 'bold')
+      doc.text(education.college || '', margin, y)
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'normal')
+      doc.text(education.gradYear || '', pageWidth - margin, y,
+        { align: 'right' })
+      y += 5
+      doc.setFontSize(10)
+      doc.text(education.degree || '', margin, y)
+      doc.text(`CGPA: ${education.cgpa || ''}`,
+        pageWidth - margin, y, { align: 'right' })
+      y += 12
+      checkNewPage()
+
+      // PROJECTS
+      if (projects.length > 0) {
+        addSectionTitle('Projects')
+        projects.forEach(p => {
+          checkNewPage()
+          doc.setFontSize(12)
+          doc.setFont('helvetica', 'bold')
+          doc.setTextColor(0, 0, 0)
+          doc.text(p.title || '', margin, y)
+          doc.setFontSize(9)
+          doc.setFont('helvetica', 'normal')
+          doc.setTextColor(100, 100, 100)
+          doc.text(p.techStack || '', pageWidth - margin, y,
+            { align: 'right' })
+          y += 5
+          doc.setFontSize(10)
+          doc.setTextColor(50, 50, 50)
+          const desc = doc.splitTextToSize(
+            p.description || '', contentWidth
+          )
+          doc.text(desc, margin, y)
+          y += desc.length * 4 + 6
+          checkNewPage()
+        })
+      }
+
+      // SKILLS
+      if (skills.length > 0) {
+        addSectionTitle('Skills')
+        doc.setFontSize(10)
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(0, 0, 0)
+        const skillText = skills.join('  •  ')
+        const skillLines = doc.splitTextToSize(
+          skillText, contentWidth
+        )
+        doc.text(skillLines, margin, y)
+        y += skillLines.length * 5 + 8
+        checkNewPage()
+      }
+
+      // EXPERIENCE
+      if (experience.length > 0) {
+        addSectionTitle('Experience')
+        experience.forEach(e => {
+          checkNewPage()
+          doc.setFontSize(12)
+          doc.setFont('helvetica', 'bold')
+          doc.setTextColor(0, 0, 0)
+          doc.text(
+            `${e.role || ''} at ${e.company || ''}`,
+            margin, y
+          )
+          doc.setFontSize(10)
+          doc.setFont('helvetica', 'normal')
+          doc.text(e.duration || '', pageWidth - margin, y,
+            { align: 'right' })
+          y += 5
+          doc.setFontSize(10)
+          doc.setTextColor(50, 50, 50)
+          const desc = doc.splitTextToSize(
+            e.description || '', contentWidth
+          )
+          doc.text(desc, margin, y)
+          y += desc.length * 4 + 6
+        })
+      }
+
+      // CERTIFICATIONS
+      if (certifications.length > 0) {
+        addSectionTitle('Certifications')
+        certifications.forEach(c => {
+          checkNewPage()
+          doc.setFontSize(12)
+          doc.setFont('helvetica', 'bold')
+          doc.setTextColor(0, 0, 0)
+          doc.text(c.name || '', margin, y)
+          doc.setFontSize(10)
+          doc.text(c.year || '', pageWidth - margin, y,
+            { align: 'right' })
+          y += 5
+          doc.setFont('helvetica', 'normal')
+          doc.setTextColor(100, 100, 100)
+          doc.text(c.issuer || '', margin, y)
+          y += 8
+        })
+      }
+
+      // Save PDF
+      doc.save('resume.pdf')
+
     } catch (error) {
-      console.error('PDF Export Error:', error)
+      console.error('PDF Error:', error)
       alert('PDF export failed. Please try again.')
     }
   }

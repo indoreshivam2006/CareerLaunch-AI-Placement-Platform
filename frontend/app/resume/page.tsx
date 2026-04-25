@@ -138,7 +138,9 @@ export default function ResumeBuilderPage() {
   const removeSkill = (skillToRemove: string) => setSkills(skills.filter(s => s !== skillToRemove));
 
   const handleExportPDF = async () => {
-    const html2pdf = (await import('html2pdf.js')).default
+    try {
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdf = html2pdfModule.default || html2pdfModule;
     
     // Build HTML string directly from state data
     const htmlContent = `
@@ -252,20 +254,19 @@ export default function ResumeBuilderPage() {
       </html>
     `
     
-    const element = document.createElement('div')
-    element.innerHTML = htmlContent
-    document.body.appendChild(element)
-    
-    const options = {
-      margin: 10,
-      filename: 'resume.pdf',
-      image: { type: 'jpeg' as const, quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+      const options = {
+        margin: 10,
+        filename: 'resume.pdf',
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true },
+        jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
+      }
+      
+      await html2pdf().set(options).from(htmlContent).save()
+    } catch (error) {
+      console.error("PDF Export Error:", error);
+      alert("Failed to export PDF. Please try again.");
     }
-    
-    await html2pdf().set(options).from(element).save()
-    document.body.removeChild(element)
   }
 
   if (isPreview) {

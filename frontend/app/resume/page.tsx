@@ -145,6 +145,60 @@ export default function ResumeBuilderPage() {
         return;
       }
 
+      // Clone the element so we can apply inline computed styles
+      // without mutating the live DOM. html2canvas often fails to
+      // resolve Tailwind CSS utility classes / CSS variables.
+      const clone = element.cloneNode(true) as HTMLElement;
+      clone.style.position = 'fixed';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.width = element.offsetWidth + 'px';
+      clone.style.backgroundColor = '#ffffff';
+      clone.style.overflow = 'visible';
+
+      // Inline all computed styles onto every element in the clone
+      // so html2canvas does not need to resolve Tailwind classes
+      const sourceElements = element.querySelectorAll('*');
+      const cloneElements = clone.querySelectorAll('*');
+      sourceElements.forEach((srcEl, i) => {
+        const computed = window.getComputedStyle(srcEl);
+        const cloneEl = cloneElements[i] as HTMLElement;
+        if (!cloneEl || !cloneEl.style) return;
+        cloneEl.style.color = computed.color;
+        cloneEl.style.backgroundColor = computed.backgroundColor;
+        cloneEl.style.fontSize = computed.fontSize;
+        cloneEl.style.fontWeight = computed.fontWeight;
+        cloneEl.style.fontFamily = computed.fontFamily;
+        cloneEl.style.fontStyle = computed.fontStyle;
+        cloneEl.style.lineHeight = computed.lineHeight;
+        cloneEl.style.letterSpacing = computed.letterSpacing;
+        cloneEl.style.textTransform = computed.textTransform;
+        cloneEl.style.display = computed.display;
+        cloneEl.style.flexDirection = computed.flexDirection;
+        cloneEl.style.flexWrap = computed.flexWrap;
+        cloneEl.style.justifyContent = computed.justifyContent;
+        cloneEl.style.alignItems = computed.alignItems;
+        cloneEl.style.gap = computed.gap;
+        cloneEl.style.padding = computed.padding;
+        cloneEl.style.margin = computed.margin;
+        cloneEl.style.borderBottom = computed.borderBottom;
+        cloneEl.style.borderColor = computed.borderColor;
+        cloneEl.style.whiteSpace = computed.whiteSpace;
+        cloneEl.style.overflow = 'visible';
+        cloneEl.style.textDecoration = computed.textDecoration;
+      });
+
+      // Also inline computed styles for the root clone element itself
+      const rootComputed = window.getComputedStyle(element);
+      clone.style.color = rootComputed.color;
+      clone.style.fontFamily = rootComputed.fontFamily;
+
+      document.body.appendChild(clone);
+
+      // Wait for fonts to finish loading and layout to settle
+      await document.fonts.ready;
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       const html2pdfModule = await import('html2pdf.js');
       const html2pdf = html2pdfModule.default || html2pdfModule;
 
@@ -152,11 +206,20 @@ export default function ResumeBuilderPage() {
         margin: 10,
         filename: 'resume.pdf',
         image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          windowWidth: element.offsetWidth,
+        },
         jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
       }
 
-      await html2pdf().set(options).from(element).save();
+      await html2pdf().set(options).from(clone).save();
+
+      // Clean up the offscreen clone
+      document.body.removeChild(clone);
     } catch (error) {
       console.error("PDF Export Error:", error);
       alert("Failed to export PDF. Please try again.");
@@ -175,12 +238,12 @@ export default function ResumeBuilderPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl overflow-hidden shadow-2xl mx-auto w-full max-w-[816px] text-black">
+          <div className="bg-white rounded-xl shadow-2xl mx-auto w-full max-w-[816px] text-black">
             <div id="resume-preview" className="bg-white" style={{ fontFamily: 'Arial, sans-serif' }}>
               {/* Template 1: Clean Minimal with Dark Header */}
               <div className="bg-[#030303] text-white p-8">
                 <h1 className="text-4xl font-bold tracking-tight mb-2 uppercase">{personalInfo.name || "Your Name"}</h1>
-                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-surface-200">
+                <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm" style={{ color: '#e9ecef' }}>
                   {personalInfo.email && <span>{personalInfo.email}</span>}
                   {personalInfo.phone && <span>{personalInfo.phone}</span>}
                   {personalInfo.linkedin && (
@@ -196,11 +259,11 @@ export default function ResumeBuilderPage() {
                 </div>
               </div>
 
-              <div className="p-8 space-y-6">
+              <div style={{ padding: '32px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {/* Education */}
                 {(education.college || education.degree) && (
                   <section>
-                    <h2 className="text-xl font-bold border-b-2 border-surface-200 pb-1 mb-3 uppercase tracking-wide text-surface-900">Education</h2>
+                    <h2 style={{ fontSize: '20px', fontWeight: 'bold', borderBottom: '2px solid #e9ecef', paddingBottom: '4px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#212529' }}>Education</h2>
                     <div style={{ marginBottom: '12px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <strong style={{ fontSize: '14px' }}>{education.college}</strong>
@@ -217,8 +280,8 @@ export default function ResumeBuilderPage() {
                 {/* Experience */}
                 {experience.length > 0 && (
                   <section>
-                    <h2 className="text-xl font-bold border-b-2 border-surface-200 pb-1 mb-3 uppercase tracking-wide text-surface-900">Experience</h2>
-                    <div className="space-y-4">
+                    <h2 style={{ fontSize: '20px', fontWeight: 'bold', borderBottom: '2px solid #e9ecef', paddingBottom: '4px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#212529' }}>Experience</h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                       {experience.map(exp => (
                         <div key={exp.id}>
                           <div style={{ marginBottom: '16px' }}>
@@ -238,8 +301,8 @@ export default function ResumeBuilderPage() {
                 {/* Projects */}
                 {projects.length > 0 && (
                   <section>
-                    <h2 className="text-xl font-bold border-b-2 border-surface-200 pb-1 mb-3 uppercase tracking-wide text-surface-900">Projects</h2>
-                    <div className="space-y-4">
+                    <h2 style={{ fontSize: '20px', fontWeight: 'bold', borderBottom: '2px solid #e9ecef', paddingBottom: '4px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#212529' }}>Projects</h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                       {projects.map(proj => (
                         <div key={proj.id}>
                           <div style={{ marginBottom: '16px' }}>
@@ -273,8 +336,8 @@ export default function ResumeBuilderPage() {
                 {/* Certifications */}
                 {certifications.length > 0 && (
                   <section>
-                    <h2 className="text-xl font-bold border-b-2 border-surface-200 pb-1 mb-3 uppercase tracking-wide text-surface-900">Certifications</h2>
-                    <div className="space-y-2">
+                    <h2 style={{ fontSize: '20px', fontWeight: 'bold', borderBottom: '2px solid #e9ecef', paddingBottom: '4px', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#212529' }}>Certifications</h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {certifications.map(cert => (
                         <div key={cert.id} style={{ marginBottom: '8px' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>

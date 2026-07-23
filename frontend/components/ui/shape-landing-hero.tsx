@@ -132,7 +132,7 @@ function HeroContent({
         className="mt-6 flex justify-center"
       >
         <span className="inline-flex items-center gap-2 rounded-full border border-white/[0.12] bg-white/[0.04] px-5 py-2 text-sm text-white/70 backdrop-blur-sm">
-          🏆 Built at Adivya 2.0 Hackathon · IIT Ropar
+          🏆 Solo Project · Adivya 2.0 Hackathon · IIT Ropar
         </span>
       </motion.div>
 

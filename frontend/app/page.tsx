@@ -122,5 +122,5 @@ const features = [
   { icon: "🧠", title: "Aptitude Module", desc: "Practice quantitative, logical, and verbal reasoning questions" },
   { icon: "🏢", title: "Company Tracker", desc: "Track upcoming campus companies, deadlines, and eligibility criteria" },
   { icon: "⚖️", title: "Offer Comparison", desc: "Compare job offers side-by-side based on CTC, location, and growth" },
-  { icon: "💳", title: "Pricing Tiers", desc: "Subscription tiers to unlock advanced AI-powered premium features" },
+  { icon: "💳", title: "Pricing Tiers", desc: "Subscription model for advanced AI-powered premium features" },
 ];

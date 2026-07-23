@@ -1,10 +1,10 @@
 # 🚀 CareerLaunch
-**An AI-powered placement preparation platform built for the Adivya 2.0 Hackathon at IIT Ropar by team HACKFINITY.**
+**An AI-powered placement preparation platform built solo by Shivam Indore for the Adivya 2.0 Hackathon at IIT Ropar.**
 
 🌐 **Live Demo:** https://career-launch-ai-placement-platform.vercel.app/
 
-> Built for **Adivya 2.0 Hackathon @ IIT Ropar** by Team HACKFINITY —
-> Shivam Indore & Kushagra Shrivastav.
+> Built solo by **Shivam Indore** for the
+> **Adivya 2.0 Hackathon @ IIT Ropar**.
 
 [![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
@@ -161,9 +161,8 @@ IIT ropar_project/
 
 ---
 
-## 👥 Team
+## 👥 Built By
 
-Built with ❤️ for **Adivya 2.0 Hackathon @ IIT Ropar** by:
-
-**Team HACKFINITY**
-- **Shivam Indore** & **Kushagra Shrivastav**
+**Shivam Indore** — Solo Developer
+- GitHub: https://github.com/indoreshivam2006
+- Portfolio: https://shivamindoreportfolio.vercel.app

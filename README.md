@@ -1,6 +1,11 @@
 # 🚀 CareerLaunch
 **An AI-powered placement preparation platform built for the Adivya 2.0 Hackathon at IIT Ropar by team HACKFINITY.**
 
+🌐 **Live Demo:** https://career-launch-ai-placement-platform.vercel.app/
+
+> Built for **Adivya 2.0 Hackathon @ IIT Ropar** by Team HACKFINITY —
+> Shivam Indore & Kushagra Shrivastav.
+
 [![Next.js](https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Groq](https://img.shields.io/badge/Groq-f55036?style=for-the-badge)](https://groq.com/)
@@ -12,16 +17,18 @@ CareerLaunch is your ultimate companion for acing campus placements. It brings t
 
 ## ✨ Features
 
-- **🤖 AI Mock Interview**: Practice behavioral and technical interviews with an AI agent that provides real-time feedback.
-- **🗣️ GD Simulator**: Simulate group discussions and get insights on your communication, leadership, and analytical skills.
-- **📄 Resume Builder**: Generate beautifully formatted, professional resumes with dynamic styling and PDF export.
-- **✅ ATS Scorer**: Upload your resume and get an ATS compatibility score along with actionable improvement tips.
-- **🎯 JD Matcher**: Match your resume against a specific Job Description to find your fit and identify missing keywords.
-- **✉️ Cover Letter Generator**: Automatically generate highly tailored cover letters for specific job roles.
-- **🧠 Aptitude Module**: Practice quantitative, logical, verbal, and data interpretation questions with timed quizzes.
-- **🏢 Company Tracker**: Track companies with interview rounds, past questions, topics to prepare, and personal checklists.
-- **⚖️ Offer Comparison**: Compare multiple job offers based on CTC, bond, work mode, growth potential, and get AI-powered recommendations.
-- **💳 Pricing Tiers**: Integrated subscription tiers to unlock advanced AI features.
+| Feature | Description |
+|---|---|
+| 🤖 AI Mock Interview | Real-time behavioral & technical interview practice |
+| 🗣️ GD Simulator | Group discussion practice with AI feedback |
+| 📄 Resume Builder | Professional resume generation with PDF export |
+| ✅ ATS Scorer | ATS compatibility scoring with actionable tips |
+| 🎯 JD Matcher | Resume vs Job Description skill gap analysis |
+| ✉️ Cover Letter Generator | Tailored cover letters via Groq LLM |
+| 🧠 Aptitude Module | Quant, logical & verbal reasoning practice |
+| 🏢 Company Tracker | Campus recruitment calendar & eligibility tracker |
+| ⚖️ Offer Comparison | Side-by-side offer evaluation tool |
+| 💳 Pricing Tiers | Subscription model for advanced AI features |
 
 ---
 
@@ -47,7 +54,7 @@ Follow these steps to get the project up and running on your local machine.
 
 ### 1. Clone the repository
 ```bash
-git clone <repository-url>
+git clone https://github.com/indoreshivam2006/CareerLaunch-AI-Placement-Platform
 cd "IIT ropar_project"
 ```
 
